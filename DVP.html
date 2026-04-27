@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sales Analytics Dashboard 2023</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #080b14;
+  --surface: #0e1322;
+  --card: #121829;
+  --card2: #141b2d;
+  --border: #1c2540;
+  --accent1: #7c6fff;
+  --accent2: #00d4aa;
+  --accent3: #ff6b6b;
+  --accent4: #ffd166;
+  --accent5: #5bc8f5;
+  --text: #e4eaf8;
+  --muted: #6b7a9e;
+  --glow1: rgba(124,111,255,0.18);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(124,111,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(0,212,170,0.06) 0%, transparent 60%);
+}
+
+header{
+  padding:48px 40px 32px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+}
+header::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg, rgba(124,111,255,0.05) 0%, transparent 50%);
+  pointer-events:none;
+}
+.header-inner{max-width:1400px;margin:0 auto;}
+.badge{
+  display:inline-block;
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--accent2);
+  background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);
+  padding:4px 12px;border-radius:20px;margin-bottom:16px;
+}
+h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(28px,4vw,52px);font-weight:800;
+  line-height:1.1;letter-spacing:-.02em;
+  background:linear-gradient(120deg, #e4eaf8 30%, var(--accent1) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:12px;
+}
+.subtitle{color:var(--muted);font-size:15px;font-weight:300;max-width:600px;}
+.kpi-row{display:flex;gap:16px;margin-top:32px;flex-wrap:wrap;}
+.kpi{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px 24px;flex:1;min-width:160px;position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--glow1);}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi:nth-child(1)::after{background:linear-gradient(90deg,var(--accent1),transparent);}
+.kpi:nth-child(2)::after{background:linear-gradient(90deg,var(--accent2),transparent);}
+.kpi:nth-child(3)::after{background:linear-gradient(90deg,var(--accent4),transparent);}
+.kpi:nth-child(4)::after{background:linear-gradient(90deg,var(--accent3),transparent);}
+.kpi:nth-child(5)::after{background:linear-gradient(90deg,var(--accent5),transparent);}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;}
+.kpi-value{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
+
+main{max-width:1400px;margin:0 auto;padding:40px;}
+.section-title{
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:28px;display:flex;align-items:center;gap:10px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:40px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:40px;}
+
+.chart-card{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:28px;position:relative;overflow:hidden;
+  transition:transform .25s,box-shadow .25s;
+}
+.chart-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4);}
+.chart-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 40% at 50% 0%, rgba(124,111,255,0.04) 0%, transparent 70%);
+  pointer-events:none;
+}
+.obj-tag{
+  font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent1);background:rgba(124,111,255,0.08);
+  border:1px solid rgba(124,111,255,0.18);border-radius:20px;
+  padding:3px 10px;display:inline-block;margin-bottom:10px;
+}
+.chart-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;}
+.chart-desc{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+.chart-wrap{position:relative;cursor:pointer;}
+.chart-wrap:hover::after{
+  content:'🔍 Click to view code';
+  position:absolute;inset:0;
+  background:rgba(8,11,20,.5);backdrop-filter:blur(2px);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--accent1);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  border-radius:8px;letter-spacing:.05em;
+}
+.insight{
+  margin-top:16px;background:rgba(0,212,170,0.05);
+  border-left:3px solid var(--accent2);border-radius:0 8px 8px 0;
+  padding:10px 14px;font-size:12.5px;color:var(--muted);line-height:1.55;
+}
+.insight strong{color:var(--accent2);}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(5,7,15,.88);backdrop-filter:blur(8px);
+  z-index:1000;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--card2);border:1px solid var(--border);border-radius:20px;
+  width:100%;max-width:800px;max-height:90vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.7);
+  animation:slideUp .22s ease;
+}
+@keyframes slideUp{from{transform:translateY(28px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-header{
+  padding:22px 28px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+.modal-close{
+  background:none;border:none;cursor:pointer;color:var(--muted);
+  font-size:24px;line-height:1;transition:color .15s;padding:0 4px;
+}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:24px 28px;overflow-y:auto;}
+.modal-obj{
+  font-size:13px;color:var(--accent2);background:rgba(0,212,170,0.06);
+  border:1px solid rgba(0,212,170,0.15);border-radius:10px;
+  padding:12px 16px;margin-bottom:18px;line-height:1.6;
+}
+.modal-obj-label{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+pre{
+  background:#06080f;border:1px solid var(--border);border-radius:10px;
+  padding:20px;overflow-x:auto;font-size:12.5px;line-height:1.75;
+  font-family:'Courier New',monospace;color:#c9d1e8;
+}
+.tok-kw{color:#7c6fff;}
+.tok-fn{color:#00d4aa;}
+.tok-str{color:#ffd166;}
+.tok-cm{color:#3e4a6a;font-style:italic;}
+.tok-num{color:#ff9f7f;}
+.copy-btn{
+  margin-top:14px;background:rgba(124,111,255,0.1);
+  border:1px solid rgba(124,111,255,0.25);color:var(--accent1);
+  border-radius:8px;padding:8px 18px;font-size:13px;
+  font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;
+}
+.copy-btn:hover{background:rgba(124,111,255,0.2);}
+
+footer{
+  text-align:center;padding:32px 20px;border-top:1px solid var(--border);
+  color:var(--muted);font-size:12px;letter-spacing:.05em;
+}
+
+@media(max-width:900px){
+  .grid,.grid-3{grid-template-columns:1fr;}
+  main{padding:20px;}
+  header{padding:28px 20px 20px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="badge">Sales Intelligence &middot; FY 2023</div>
+    <h1>Sales Analytics<br/>Dashboard</h1>
+    <p class="subtitle">Comprehensive breakdown of &#8377;50.19L revenue across regions, representatives, categories and channels &mdash; 1,000 transactions.</p>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value" style="color:var(--accent1)">&#8377;50.19L</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Top Region</div>
+        <div class="kpi-value" style="color:var(--accent2)">North</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Top Sales Rep</div>
+        <div class="kpi-value" style="color:var(--accent4)">David</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Top Category</div>
+        <div class="kpi-value" style="color:var(--accent3)">Clothing</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Transactions</div>
+        <div class="kpi-value" style="color:var(--accent5)">1,000</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-title">Regional &amp; Representative Performance</div>
+  <div class="grid">
+
+    <div class="chart-card">
+      <div class="obj-tag">Objective 1</div>
+      <div class="chart-title">Revenue by Region</div>
+      <div class="chart-desc">Total sales amounts across all four regions to identify top and bottom performers.</div>
+      <div class="chart-wrap" onclick="openModal('region')">
+        <canvas id="regionChart" height="220"></canvas>
+      </div>
+      <div class="insight"><strong>North &#8377;13.70L</strong> leads all regions &mdash; <strong>South &#8377;11.54L</strong> is the bottom performer. Gap of &#8377;2.15L between top and bottom.</div>
+    </div>
+
+    <div class="chart-card">
+      <div class="obj-tag">Objective 2</div>
+      <div class="chart-title">Sales Rep Performance Ranking</div>
+      <div class="chart-desc">All five sales representatives ranked by revenue generated, visualizing individual contributions.</div>
+      <div class="chart-wrap" onclick="openModal('rep')">
+        <canvas id="repChart" height="220"></canvas>
+      </div>
+      <div class="insight"><strong>David &#8377;11.42L</strong> is the highest earner. <strong>Charlie &#8377;8.61L</strong> ranks last &mdash; a &#8377;2.81L gap from the top.</div>
+    </div>
+  </div>
+
+  <div class="section-title">Monthly Trends &amp; Pricing Strategy</div>
+  <div class="grid">
+
+    <div class="chart-card">
+      <div class="obj-tag">Objective 3</div>
+      <div class="chart-title">Monthly Sales Trends (2023)</div>
+      <div class="chart-desc">Line chart analyzing monthly revenue to detect seasonality and peak sales periods across the full year.</div>
+      <div class="chart-wrap" onclick="openModal('monthly')">
+        <canvas id="monthlyChart" height="220"></canvas>
+      </div>
+      <div class="insight"><strong>January &#8377;4.95L</strong> is the peak month. <strong>September &#8377;3.68L</strong> is the lowest. A clear mid-year dip is visible Jun&ndash;Sep.</div>
+    </div>
+
+    <div class="chart-card">
+      <div class="obj-tag">Objective 4</div>
+      <div class="chart-title">Discount Rate vs Sales Amount</div>
+      <div class="chart-desc">Scatter plot examining correlation between discount rates and sales amounts to assess pricing strategy effectiveness.</div>
+      <div class="chart-wrap" onclick="openModal('scatter')">
+        <canvas id="scatterChart" height="220"></canvas>
+      </div>
+      <div class="insight"><strong>Weak negative correlation</strong> confirmed &mdash; higher discounts do not significantly drive revenue. Discounting alone is not an effective growth lever.</div>
+    </div>
+  </div>
+
+  <div class="section-title">Category, Channel &amp; Customer Analysis</div>
+  <div class="grid-3">
+
+    <div class="chart-card">
+      <div class="obj-tag">Objective 5a</div>
+      <div class="chart-title">Revenue by Product Category</div>
+      <div class="chart-desc">Revenue breakdown across Furniture, Food, Clothing, and Electronics categories.</div>
+      <div class="chart-wrap" onclick="openModal('category')">
+        <canvas id="categoryChart" height="250"></canvas>
+      </div>
+      <div class="insight"><strong>Clothing &#8377;13.13L</strong> is the top category. <strong>Food &#8377;12.02L</strong> ranks lowest. All four categories are competitively close.</div>
+    </div>
+
+    <div class="chart-card">
+      <div class="obj-tag">Objective 5b</div>
+      <div class="chart-title">Online vs Retail Channel</div>
+      <div class="chart-desc">Revenue comparison between Online and Retail sales channels.</div>
+      <div class="chart-wrap" onclick="openModal('channel')">
+        <canvas id="channelChart" height="250"></canvas>
+      </div>
+      <div class="insight"><strong>Retail &#8377;25.60L (51%)</strong> slightly leads Online &#8377;24.59L &mdash; a near-balanced split indicating healthy omnichannel presence.</div>
+    </div>
+
+    <div class="chart-card">
+      <div class="obj-tag">Objective 6</div>
+      <div class="chart-title">New vs Returning Customers</div>
+      <div class="chart-desc">Purchasing patterns and revenue contribution comparison by customer type.</div>
+      <div class="chart-wrap" onclick="openModal('customer')">
+        <canvas id="customerChart" height="250"></canvas>
+      </div>
+      <div class="insight"><strong>Returning &#8377;25.13L vs New &#8377;25.06L</strong> &mdash; virtually equal split showing strong customer acquisition AND retention.</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>Sales Analytics Dashboard &middot; FY 2023 &middot; 1,000 Transactions &middot; &#8377;50.19L Total Revenue &middot; Click any chart to view source code</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Chart Code</div>
+      <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-obj">
+        <div class="modal-obj-label">Objective</div>
+        <span id="modalObj"></span>
+      </div>
+      <pre id="modalCode"></pre>
+      <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CHART DEFAULTS ────────────────────────────────────────────────────
+const gridCfg  = { color:'rgba(255,255,255,0.04)', drawBorder:false };
+const tickCfg  = { color:'#6b7a9e', font:{family:'DM Sans',size:11} };
+const ttBase   = { backgroundColor:'#161c2e', borderColor:'#1c2540', borderWidth:1,
+                   titleColor:'#e4eaf8', bodyColor:'#6b7a9e' };
+
+// ── CHART 1: REGION ───────────────────────────────────────────────────
+new Chart(document.getElementById('regionChart'),{
+  type:'bar',
+  data:{
+    labels:['North','East','West','South'],
+    datasets:[{
+      label:'Revenue (₹)',
+      data:[1369612.51,1259792.93,1235608.93,1154250.86],
+      backgroundColor:['rgba(0,212,170,.75)','rgba(124,111,255,.65)','rgba(91,200,245,.65)','rgba(255,107,107,.65)'],
+      borderColor:['rgba(0,212,170,1)','rgba(124,111,255,1)','rgba(91,200,245,1)','rgba(255,107,107,1)'],
+      borderWidth:1.5, borderRadius:6, borderSkipped:false
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...ttBase, callbacks:{label:c=>' ₹'+Math.round(c.raw).toLocaleString()}}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:tickCfg},
+      y:{grid:gridCfg, ticks:{...tickCfg, callback:v=>'₹'+(v/100000).toFixed(1)+'L'}}
+    }
+  }
+});
+
+// ── CHART 2: SALES REP ────────────────────────────────────────────────
+new Chart(document.getElementById('repChart'),{
+  type:'bar',
+  data:{
+    labels:['David','Bob','Eve','Alice','Charlie'],
+    datasets:[{
+      label:'Revenue (₹)',
+      data:[1141737.36,1080990.63,970183.99,965541.77,860811.48],
+      backgroundColor:['rgba(255,209,102,.82)','rgba(124,111,255,.7)','rgba(91,200,245,.7)','rgba(0,212,170,.7)','rgba(255,107,107,.7)'],
+      borderColor:['rgba(255,209,102,1)','rgba(124,111,255,1)','rgba(91,200,245,1)','rgba(0,212,170,1)','rgba(255,107,107,1)'],
+      borderWidth:1.5, borderRadius:6, borderSkipped:false
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...ttBase, callbacks:{label:c=>' ₹'+Math.round(c.raw).toLocaleString()}}},
+    scales:{
+      x:{grid:gridCfg, ticks:{...tickCfg, callback:v=>'₹'+(v/100000).toFixed(1)+'L'}},
+      y:{grid:{color:'rgba(255,255,255,0.03)'}, ticks:tickCfg}
+    }
+  }
+});
+
+// ── CHART 3: MONTHLY ─────────────────────────────────────────────────
+new Chart(document.getElementById('monthlyChart'),{
+  type:'line',
+  data:{
+    labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets:[{
+      label:'Monthly Revenue',
+      data:[495420.37,368919.36,402638.77,438992.61,389078.76,418458.34,374242.88,443171.28,367837.60,460378.78,467482.90,392643.58],
+      borderColor:'rgba(124,111,255,1)',
+      backgroundColor:'rgba(124,111,255,0.09)',
+      pointBackgroundColor:'rgba(124,111,255,1)',
+      pointBorderColor:'#0e1322', pointRadius:5, pointHoverRadius:7,
+      tension:.38, fill:true
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...ttBase, callbacks:{label:c=>' ₹'+Math.round(c.raw).toLocaleString()}}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.03)'}, ticks:tickCfg},
+      y:{grid:gridCfg, ticks:{...tickCfg, callback:v=>'₹'+(v/100000).toFixed(1)+'L'}}
+    }
+  }
+});
+
+// ── CHART 4: SCATTER ─────────────────────────────────────────────────
+const scatterRaw=[[0.21,7667.96],[0.16,433.4],[0.28,5617.64],[0.08,780.27],[0.08,848.28],[0.24,7542.3],[0.19,5403.0],[0.11,4494.8],[0.14,9736.49],[0.0,7952.11],[0.01,7001.64],[0.08,4634.16],[0.3,8837.34],[0.19,6760.37],[0.0,3349.51],[0.0,919.09],[0.22,9850.1],[0.3,2855.85],[0.12,2490.82],[0.2,7297.86],[0.19,9417.1],[0.26,2363.9],[0.29,776.7],[0.12,797.87],[0.15,485.41],[0.06,2150.05],[0.14,8130.13],[0.2,3577.07],[0.12,5677.74],[0.12,4947.28],[0.15,4025.88],[0.23,9610.21],[0.01,6321.42],[0.24,8963.93],[0.1,4104.82],[0.12,3635.5],[0.2,8915.05],[0.22,6116.75],[0.03,3093.95],[0.08,1290.05],[0.17,349.41],[0.01,1493.95],[0.14,8090.0],[0.05,2282.99],[0.05,5187.16],[0.19,3772.32],[0.17,5426.42],[0.23,8718.22],[0.2,4140.7],[0.12,5873.59],[0.22,119.72],[0.09,9733.46],[0.1,3111.57],[0.12,8919.47],[0.24,6483.84],[0.06,675.11],[0.19,7948.31],[0.23,8518.45],[0.29,2896.71],[0.2,6710.83],[0.07,7172.8],[0.2,9762.54],[0.2,7914.0],[0.07,2286.44],[0.09,1242.41],[0.17,6575.91],[0.27,4695.96],[0.03,8188.04],[0.09,9744.52],[0.25,3147.18],[0.02,9183.11],[0.06,3774.02],[0.08,9602.64],[0.27,485.9],[0.3,519.98],[0.28,7828.25],[0.24,8057.76],[0.15,1331.25],[0.25,2273.58],[0.24,9217.85],[0.18,8049.72],[0.15,3780.22],[0.28,8186.12],[0.03,113.4],[0.06,7041.58],[0.04,5105.78],[0.01,1629.47],[0.09,2792.27],[0.23,765.83],[0.03,3905.11],[0.22,6359.59],[0.27,182.37],[0.17,4155.74],[0.1,5842.88],[0.07,7103.23],[0.22,5917.1],[0.0,1387.8],[0.22,7873.38],[0.22,7754.1],[0.25,7026.43],[0.08,2714.21],[0.17,2971.45],[0.03,8611.97],[0.07,4224.0],[0.11,8564.24],[0.29,8785.77],[0.17,5081.01],[0.15,8274.54],[0.09,7739.11],[0.22,4638.47],[0.12,1937.9],[0.1,289.53],[0.27,4637.4],[0.25,6033.09],[0.01,9582.12],[0.1,9452.89],[0.26,6658.1],[0.05,2706.15],[0.06,2962.96],[0.24,6055.38],[0.07,719.39],[0.13,3197.78],[0.12,7982.79],[0.19,2338.64],[0.25,783.18],[0.09,8601.77],[0.15,5240.32],[0.01,4050.45],[0.3,8540.22],[0.23,7179.49],[0.1,5051.12],[0.2,8643.67],[0.25,7320.51],[0.29,4733.88],[0.04,6675.77],[0.05,1342.95],[0.06,2494.74],[0.16,9509.55],[0.2,7160.75],[0.09,333.59],[0.04,5991.8],[0.18,1600.79],[0.18,1990.17],[0.2,7567.06],[0.11,2184.02],[0.03,8241.57],[0.24,6939.75],[0.14,6966.82],[0.01,1780.31],[0.22,9476.2],[0.27,763.04],[0.3,9775.35],[0.18,2571.72],[0.05,9472.66],[0.22,1347.42],[0.26,6171.59],[0.09,7316.91],[0.21,4791.82],[0.2,2729.27],[0.16,8003.1],[0.29,5454.96],[0.06,7859.01],[0.05,6518.35],[0.02,833.64],[0.24,9755.9],[0.07,6650.67],[0.09,1114.91],[0.21,9091.46],[0.19,3518.89],[0.27,8630.74],[0.09,6772.8],[0.19,6761.43],[0.11,8912.4],[0.13,9215.32],[0.15,5488.11],[0.2,5533.7],[0.2,7678.91],[0.01,9733.47],[0.29,628.15],[0.08,7841.4],[0.04,9215.59],[0.08,152.6],[0.08,660.2],[0.13,1688.58],[0.09,8821.63],[0.01,8552.47],[0.03,2579.63],[0.22,3137.09],[0.14,2044.55],[0.03,8271.62],[0.24,6482.98],[0.17,9613.11],[0.3,3279.51],[0.15,7896.74],[0.15,8681.03],[0.03,9688.52],[0.25,9705.55],[0.06,5108.98],[0.18,2122.73],[0.21,3098.87],[0.17,3741.08],[0.27,3167.09],[0.08,6360.67],[0.26,6801.71],[0.21,9220.94],[0.12,6994.66],[0.25,6699.34],[0.28,7277.56],[0.26,5886.04],[0.03,7813.12],[0.26,3546.15],[0.23,9519.16],[0.29,8417.07],[0.01,8397.73],[0.26,5634.69],[0.27,7066.63],[0.01,6601.62],[0.17,5437.04],[0.26,1526.38],[0.02,862.02],[0.23,7171.83],[0.23,4380.23],[0.01,2260.25],[0.19,6807.67],[0.21,3492.19],[0.2,4631.23],[0.07,9146.51],[0.27,3166.9],[0.13,1457.77],[0.25,2574.57],[0.19,8020.03],[0.25,9093.5],[0.19,9519.76],[0.13,927.19],[0.3,2749.17],[0.02,1203.97],[0.04,5952.19],[0.1,5755.48],[0.08,3780.07],[0.26,4432.85],[0.02,2167.94],[0.2,2479.95],[0.18,316.94],[0.24,8063.7],[0.26,4670.99],[0.13,4752.88],[0.29,1148.47],[0.21,4040.25],[0.08,4790.72],[0.25,5490.52],[0.17,4892.36],[0.03,2985.46],[0.11,2365.87],[0.23,8109.33],[0.21,7075.09],[0.2,3867.13],[0.29,9278.4],[0.29,4244.21],[0.1,8635.81],[0.21,3761.15],[0.24,975.01],[0.24,7169.12],[0.21,6261.9],[0.08,9671.77],[0.05,5760.29],[0.19,9385.86],[0.07,6530.14],[0.17,6453.17],[0.29,3402.92],[0.17,6747.64],[0.29,7405.38],[0.18,9583.55],[0.28,4896.93],[0.15,2896.48],[0.26,6586.22],[0.13,8239.58],[0.26,9514.19],[0.01,5371.79],[0.25,2541.38],[0.13,5851.41],[0.14,3971.23],[0.03,9813.07],[0.26,5118.51],[0.01,5879.35],[0.29,456.59],[0.22,9396.78],[0.22,9070.26],[0.13,9772.37],[0.13,7825.62],[0.21,5571.36],[0.01,5835.21],[0.22,9956.75],[0.2,7895.13],[0.16,2496.02],[0.09,613.17],[0.1,8786.95],[0.27,3677.9],[0.24,8674.35],[0.12,7698.92],[0.3,9442.65]];
+new Chart(document.getElementById('scatterChart'),{
+  type:'scatter',
+  data:{
+    datasets:[{
+      label:'Discount vs Sales',
+      data:scatterRaw.map(p=>({x:+(p[0]*100).toFixed(1), y:p[1]})),
+      backgroundColor:'rgba(0,212,170,0.3)',
+      borderColor:'rgba(0,212,170,0.55)',
+      pointRadius:4, pointHoverRadius:6
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{...ttBase, callbacks:{
+      label:c=>`Discount: ${c.raw.x}%  |  Sales: ₹${c.raw.y.toLocaleString()}`
+    }}},
+    scales:{
+      x:{grid:gridCfg,
+         title:{display:true,text:'Discount (%)',color:'#6b7a9e',font:{size:11}},
+         ticks:{...tickCfg, callback:v=>v+'%'}},
+      y:{grid:gridCfg,
+         title:{display:true,text:'Sales Amount (₹)',color:'#6b7a9e',font:{size:11}},
+         ticks:{...tickCfg, callback:v=>'₹'+v.toLocaleString()}}
+    }
+  }
+});
+
+// ── CHART 5: CATEGORY ────────────────────────────────────────────────
+new Chart(document.getElementById('categoryChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Clothing','Furniture','Electronics','Food'],
+    datasets:[{
+      data:[1313474.36,1260517.69,1243499.64,1201773.54],
+      backgroundColor:['rgba(255,107,107,.82)','rgba(124,111,255,.78)','rgba(91,200,245,.78)','rgba(255,209,102,.78)'],
+      borderColor:'#121829', borderWidth:3, hoverOffset:10
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{
+      legend:{labels:{color:'#6b7a9e',font:{family:'DM Sans',size:11},boxWidth:10,padding:14}, position:'bottom'},
+      tooltip:{...ttBase, callbacks:{label:c=>' ₹'+(c.raw/100000).toFixed(2)+'L'}}
+    }
+  }
+});
+
+// ── CHART 6: CHANNEL ─────────────────────────────────────────────────
+new Chart(document.getElementById('channelChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Retail','Online'],
+    datasets:[{
+      data:[2560431.30,2458833.93],
+      backgroundColor:['rgba(91,200,245,.82)','rgba(0,212,170,.78)'],
+      borderColor:'#121829', borderWidth:3, hoverOffset:10
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{
+      legend:{labels:{color:'#6b7a9e',font:{family:'DM Sans',size:11},boxWidth:10,padding:14}, position:'bottom'},
+      tooltip:{...ttBase, callbacks:{label:c=>' ₹'+(c.raw/100000).toFixed(2)+'L'}}
+    }
+  }
+});
+
+// ── CHART 7: CUSTOMER ────────────────────────────────────────────────
+new Chart(document.getElementById('customerChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Returning','New'],
+    datasets:[{
+      data:[2513006.93,2506258.30],
+      backgroundColor:['rgba(255,209,102,.82)','rgba(124,111,255,.78)'],
+      borderColor:'#121829', borderWidth:3, hoverOffset:10
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{
+      legend:{labels:{color:'#6b7a9e',font:{family:'DM Sans',size:11},boxWidth:10,padding:14}, position:'bottom'},
+      tooltip:{...ttBase, callbacks:{label:c=>' ₹'+(c.raw/100000).toFixed(2)+'L'}}
+    }
+  }
+});
+
+// ── MODAL CODE SNIPPETS ───────────────────────────────────────────────
+const CODES = {
+  region:{
+    title:'Chart 1 — Revenue by Region',
+    obj:'Objective 1: Compare total sales amounts across all four regions (North, East, South, West) to identify top and bottom performers.',
+    code:`<span class="tok-cm">// Revenue by Region — Horizontal Bar Chart (Chart.js)</span>
+<span class="tok-kw">new</span> Chart(document.<span class="tok-fn">getElementById</span>(<span class="tok-str">'regionChart'</span>), {
+  type: <span class="tok-str">'bar'</span>,
+  data: {
+    labels: [<span class="tok-str">'North'</span>, <span class="tok-str">'East'</span>, <span class="tok-str">'West'</span>, <span class="tok-str">'South'</span>],
+    datasets: [{
+      label: <span class="tok-str">'Revenue (₹)'</span>,
+      <span class="tok-cm">// Aggregated from 1,000 sales transactions (sales_data.csv)</span>
+      data: [<span class="tok-num">1369612.51</span>, <span class="tok-num">1259792.93</span>, <span class="tok-num">1235608.93</span>, <span class="tok-num">1154250.86</span>],
+      backgroundColor: [
+        <span class="tok-str">'rgba(0,212,170,.75)'</span>,   <span class="tok-cm">// North — top performer</span>
+        <span class="tok-str">'rgba(124,111,255,.65)'</span>,  <span class="tok-cm">// East</span>
+        <span class="tok-str">'rgba(91,200,245,.65)'</span>,   <span class="tok-cm">// West</span>
+        <span class="tok-str">'rgba(255,107,107,.65)'</span>    <span class="tok-cm">// South — bottom performer</span>
+      ],
+      borderRadius: <span class="tok-num">6</span>,
+      borderSkipped: <span class="tok-kw">false</span>
+    }]
+  },
+  options: {
+    responsive: <span class="tok-kw">true</span>,
+    plugins: { legend: { display: <span class="tok-kw">false</span> } },
+    scales: {
+      y: { ticks: { callback: v => <span class="tok-str">'₹'</span> + (v/<span class="tok-num">100000</span>).<span class="tok-fn">toFixed</span>(<span class="tok-num">1</span>) + <span class="tok-str">'L'</span> } }
+    }
+  }
+});`
+  },
+  rep:{
+    title:'Chart 2 — Sales Rep Performance',
+    obj:'Objective 2: Rank all five sales representatives by revenue generated and visualize individual contributions.',
+    code:`<span class="tok-cm">// Sales Rep Ranking — Horizontal Bar Chart (Chart.js)</span>
+<span class="tok-cm">// Data derived from: df.groupby('Sales_Rep')['Sales_Amount'].sum()</span>
+<span class="tok-kw">new</span> Chart(document.<span class="tok-fn">getElementById</span>(<span class="tok-str">'repChart'</span>), {
+  type: <span class="tok-str">'bar'</span>,
+  data: {
+    labels: [<span class="tok-str">'David'</span>, <span class="tok-str">'Bob'</span>, <span class="tok-str">'Eve'</span>, <span class="tok-str">'Alice'</span>, <span class="tok-str">'Charlie'</span>],
+    datasets: [{
+      label: <span class="tok-str">'Revenue (₹)'</span>,
+      data: [<span class="tok-num">1141737.36</span>, <span class="tok-num">1080990.63</span>, <span class="tok-num">970183.99</span>, <span class="tok-num">965541.77</span>, <span class="tok-num">860811.48</span>],
+      borderRadius: <span class="tok-num">6</span>,
+      borderSkipped: <span class="tok-kw">false</span>
+    }]
+  },
+  options: {
+    indexAxis: <span class="tok-str">'y'</span>,  <span class="tok-cm">// makes bars horizontal</span>
+    plugins: { legend: { display: <span class="tok-kw">false</span> } },
+    scales: {
+      x: { ticks: { callback: v => <span class="tok-str">'₹'</span> + (v/<span class="tok-num">100000</span>).<span class="tok-fn">toFixed</span>(<span class="tok-num">1</span>) + <span class="tok-str">'L'</span> } }
+    }
+  }
+});`
+  },
+  monthly:{
+    title:'Chart 3 — Monthly Sales Trends',
+    obj:'Objective 3: Analyze monthly sales trends across 2023 using line charts to detect seasonality and peak sales periods.',
+    code:`<span class="tok-cm">// Monthly Revenue Trend — Line Chart (Chart.js)</span>
+<span class="tok-cm">// Data: df.groupby(df['Sale_Date'].dt.month)['Sales_Amount'].sum()</span>
+<span class="tok-kw">const</span> monthlyRevenue = [
+  <span class="tok-num">495420.37</span>,  <span class="tok-cm">// Jan — PEAK</span>
+  <span class="tok-num">368919.36</span>,  <span class="tok-cm">// Feb</span>
+  <span class="tok-num">402638.77</span>,  <span class="tok-cm">// Mar</span>
+  <span class="tok-num">438992.61</span>,  <span class="tok-cm">// Apr</span>
+  <span class="tok-num">389078.76</span>,  <span class="tok-cm">// May</span>
+  <span class="tok-num">418458.34</span>,  <span class="tok-cm">// Jun</span>
+  <span class="tok-num">374242.88</span>,  <span class="tok-cm">// Jul</span>
+  <span class="tok-num">443171.28</span>,  <span class="tok-cm">// Aug</span>
+  <span class="tok-num">367837.60</span>,  <span class="tok-cm">// Sep — TROUGH</span>
+  <span class="tok-num">460378.78</span>,  <span class="tok-cm">// Oct</span>
+  <span class="tok-num">467482.90</span>,  <span class="tok-cm">// Nov</span>
+  <span class="tok-num">392643.58</span>   <span class="tok-cm">// Dec</span>
+];
+<span class="tok-kw">new</span> Chart(document.<span class="tok-fn">getElementById</span>(<span class="tok-str">'monthlyChart'</span>), {
+  type: <span class="tok-str">'line'</span>,
+  data: {
+    labels: [<span class="tok-str">'Jan'</span>,<span class="tok-str">'Feb'</span>,<span class="tok-str">'Mar'</span>,<span class="tok-str">'Apr'</span>,<span class="tok-str">'May'</span>,<span class="tok-str">'Jun'</span>,
+             <span class="tok-str">'Jul'</span>,<span class="tok-str">'Aug'</span>,<span class="tok-str">'Sep'</span>,<span class="tok-str">'Oct'</span>,<span class="tok-str">'Nov'</span>,<span class="tok-str">'Dec'</span>],
+    datasets: [{
+      label: <span class="tok-str">'Monthly Revenue'</span>,
+      data: monthlyRevenue,
+      borderColor: <span class="tok-str">'rgba(124,111,255,1)'</span>,
+      backgroundColor: <span class="tok-str">'rgba(124,111,255,0.09)'</span>,
+      tension: <span class="tok-num">0.38</span>,
+      fill: <span class="tok-kw">true</span>
+    }]
+  }
+});`
+  },
+  scatter:{
+    title:'Chart 4 — Discount vs Sales Amount',
+    obj:'Objective 4: Examine the correlation between discount rates and sales amounts using scatter plots to assess pricing strategy effectiveness.',
+    code:`<span class="tok-cm">// Scatter Plot: Discount % vs Sales Amount (Chart.js)</span>
+<span class="tok-cm">// Data: 300 sampled rows from sales_data.csv</span>
+<span class="tok-cm">// Python aggregation used:</span>
+<span class="tok-cm">// sample = df[['Discount','Sales_Amount']].sample(300, random_state=42)</span>
+
+<span class="tok-kw">const</span> rawData = [ <span class="tok-cm">/* [discount, sales_amount] pairs */</span>
+  [<span class="tok-num">0.21</span>, <span class="tok-num">7667.96</span>], [<span class="tok-num">0.16</span>, <span class="tok-num">433.4</span>], [<span class="tok-num">0.28</span>, <span class="tok-num">5617.64</span>],
+  <span class="tok-cm">// ... 297 more rows</span>
+];
+
+<span class="tok-kw">new</span> Chart(document.<span class="tok-fn">getElementById</span>(<span class="tok-str">'scatterChart'</span>), {
+  type: <span class="tok-str">'scatter'</span>,
+  data: {
+    datasets: [{
+      label: <span class="tok-str">'Discount vs Sales'</span>,
+      data: rawData.<span class="tok-fn">map</span>(p => ({ x: p[<span class="tok-num">0</span>] * <span class="tok-num">100</span>, y: p[<span class="tok-num">1</span>] })),
+      backgroundColor: <span class="tok-str">'rgba(0,212,170,0.3)'</span>,
+      pointRadius: <span class="tok-num">4</span>
+    }]
+  },
+  options: {
+    scales: {
+      x: { title: { display: <span class="tok-kw">true</span>, text: <span class="tok-str">'Discount (%)'</span> } },
+      y: { title: { display: <span class="tok-kw">true</span>, text: <span class="tok-str">'Sales Amount (₹)'</span> } }
+    }
+  }
+});
+<span class="tok-cm">// Finding: Weak negative correlation — discounting is ineffective</span>`
+  },
+  category:{
+    title:'Chart 5a — Revenue by Product Category',
+    obj:'Objective 5a: Break down revenue by product category — Furniture, Food, Clothing, and Electronics.',
+    code:`<span class="tok-cm">// Product Category — Doughnut Chart (Chart.js)</span>
+<span class="tok-cm">// Data: df.groupby('Product_Category')['Sales_Amount'].sum()</span>
+<span class="tok-kw">new</span> Chart(document.<span class="tok-fn">getElementById</span>(<span class="tok-str">'categoryChart'</span>), {
+  type: <span class="tok-str">'doughnut'</span>,
+  data: {
+    labels: [<span class="tok-str">'Clothing'</span>, <span class="tok-str">'Furniture'</span>, <span class="tok-str">'Electronics'</span>, <span class="tok-str">'Food'</span>],
+    datasets: [{
+      data: [<span class="tok-num">1313474.36</span>, <span class="tok-num">1260517.69</span>, <span class="tok-num">1243499.64</span>, <span class="tok-num">1201773.54</span>],
+      backgroundColor: [
+        <span class="tok-str">'rgba(255,107,107,.82)'</span>,   <span class="tok-cm">// Clothing — TOP</span>
+        <span class="tok-str">'rgba(124,111,255,.78)'</span>,  <span class="tok-cm">// Furniture</span>
+        <span class="tok-str">'rgba(91,200,245,.78)'</span>,   <span class="tok-cm">// Electronics</span>
+        <span class="tok-str">'rgba(255,209,102,.78)'</span>    <span class="tok-cm">// Food — LOWEST</span>
+      ],
+      borderWidth: <span class="tok-num">3</span>
+    }]
+  },
+  options: {
+    cutout: <span class="tok-str">'62%'</span>,
+    plugins: { legend: { position: <span class="tok-str">'bottom'</span> } }
+  }
+});`
+  },
+  channel:{
+    title:'Chart 5b — Online vs Retail Channel',
+    obj:'Objective 5b: Break down revenue by sales channel — Online vs Retail to understand channel performance.',
+    code:`<span class="tok-cm">// Sales Channel — Doughnut Chart (Chart.js)</span>
+<span class="tok-cm">// Data: df.groupby('Sales_Channel')['Sales_Amount'].sum()</span>
+<span class="tok-kw">new</span> Chart(document.<span class="tok-fn">getElementById</span>(<span class="tok-str">'channelChart'</span>), {
+  type: <span class="tok-str">'doughnut'</span>,
+  data: {
+    labels: [<span class="tok-str">'Retail'</span>, <span class="tok-str">'Online'</span>],
+    datasets: [{
+      data: [<span class="tok-num">2560431.30</span>, <span class="tok-num">2458833.93</span>],
+      backgroundColor: [
+        <span class="tok-str">'rgba(91,200,245,.82)'</span>,  <span class="tok-cm">// Retail — 50.9%</span>
+        <span class="tok-str">'rgba(0,212,170,.78)'</span>    <span class="tok-cm">// Online — 49.1%</span>
+      ],
+      borderWidth: <span class="tok-num">3</span>
+    }]
+  },
+  options: {
+    cutout: <span class="tok-str">'62%'</span>,
+    plugins: { legend: { position: <span class="tok-str">'bottom'</span> } }
+  }
+});
+<span class="tok-cm">// Finding: Near 50/50 split — healthy omnichannel balance</span>`
+  },
+  customer:{
+    title:'Chart 6 — New vs Returning Customers',
+    obj:'Objective 6: Compare purchasing patterns and revenue contribution of New vs Returning customers.',
+    code:`<span class="tok-cm">// Customer Type — Doughnut Chart (Chart.js)</span>
+<span class="tok-cm">// Data: df.groupby('Customer_Type')['Sales_Amount'].sum()</span>
+<span class="tok-kw">new</span> Chart(document.<span class="tok-fn">getElementById</span>(<span class="tok-str">'customerChart'</span>), {
+  type: <span class="tok-str">'doughnut'</span>,
+  data: {
+    labels: [<span class="tok-str">'Returning'</span>, <span class="tok-str">'New'</span>],
+    datasets: [{
+      data: [<span class="tok-num">2513006.93</span>, <span class="tok-num">2506258.30</span>],
+      backgroundColor: [
+        <span class="tok-str">'rgba(255,209,102,.82)'</span>,  <span class="tok-cm">// Returning — ₹25.13L</span>
+        <span class="tok-str">'rgba(124,111,255,.78)'</span>   <span class="tok-cm">// New — ₹25.06L</span>
+      ],
+      borderWidth: <span class="tok-num">3</span>
+    }]
+  },
+  options: {
+    cutout: <span class="tok-str">'62%'</span>,
+    plugins: { legend: { position: <span class="tok-str">'bottom'</span> } }
+  }
+});
+<span class="tok-cm">// Finding: ~50/50 split — strong retention AND acquisition</span>`
+  }
+};
+
+function openModal(key) {
+  const d = CODES[key];
+  document.getElementById('modalTitle').textContent = d.title;
+  document.getElementById('modalObj').innerHTML = d.obj;
+  document.getElementById('modalCode').innerHTML = d.code;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+function copyCode() {
+  const text = document.getElementById('modalCode').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy Code', 1800);
+  });
+}
+</script>
+</body>
+</html>
